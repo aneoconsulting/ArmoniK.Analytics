@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools",
+            "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "armonik_analytics"
+description = "Set of tools for analyzing workload execution on ArmoniK."
+dynamic = ["version"]
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["ArmoniK", "Analytics", "task graph", "HPC"]
+license = {text = "Apache Software License 2.0"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/aneoconsulting/ArmoniK.Analytics"
+repository = "https://github.com/aneoconsulting/ArmoniK.Analytics"
+"Bug Tracker" = "https://github.com/aneoconsulting/ArmoniK.Analytics/issues"
+
+[tool.setuptools]
+include-package-data = true
+dynamic = {version = {attr = "armonik_analytics.__version__"}}
+
+[tool.setuptools.packages.find]
+where= ["src"]
+exclude=['tests']
+
+[tool.setuptools.package-data]
+"*" = ["*.pyi"]
+
+[project.optional-dependencies]
+dev = [
+    'mypy',
+    'ruff'
+]
+tests = [
+  'coverage',
+  'pytest',
+  'pytest-cov',
+  'pytest-benchmark[histogram]',
+]
