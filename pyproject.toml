@@ -14,7 +14,10 @@ license = {text = "Apache Software License 2.0"}
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
-dependencies = []
+dependencies = [
+  'armonik',
+  'numpy',
+]
 
 [project.urls]
 Homepage = "https://github.com/aneoconsulting/ArmoniK.Analytics"
