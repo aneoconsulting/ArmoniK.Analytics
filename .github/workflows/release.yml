@@ -1,0 +1,63 @@
+name: Release Packages
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  # We need to verify the version in some packages with the tag in order to have the same version in all packages (python, csharp, angular, web).
+  # Some packages use an internal version (like csharp, angular and web) and some use the tag version (like python).
+  
+  release-python-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          fetch-depth: 0
+
+      - name: pip update and add build package
+        run: |
+          pip install build
+          python -m build
+
+      - name: Upload as artifact
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3
+        with:
+          name: python-packages
+          path: dist/
+
+      - name: Publish to PyPITest
+        if: github.ref != 'refs/heads/main'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.DEV_PYPI_API_TOKEN }}
+          print-hash: true
+          packages-dir: dist/
+          repository-url: https://test.pypi.org/legacy/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          print_hash: true
+          packages_dir: dist/
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
+        with:
+          fetch-depth: 0
+
+      - name: Set node
+        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3
+        with:
+          node-version: 18
+
+      - run: npx changelogithub
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
