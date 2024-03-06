@@ -1,10 +1,4 @@
-
-
-
-    
-
-
-# armonik_analytics
+# ArmoniK Analytics
 
 Set of tools for analyzing workload execution on ArmoniK.
 
