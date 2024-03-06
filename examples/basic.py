@@ -42,8 +42,7 @@ if __name__ == "__main__":
     parser.add_argument("--session-id", "-s", type=str, help="ID of the session")
     args = parser.parse_args()
 
-    if args.endpoint.startswith("http://"):
-        args.endpoint = args.endpoint.removeprefix("http://")
+    args.endpoint = args.endpoint.removeprefix("http://")
 
     with grpc.insecure_channel(args.endpoint) as channel:
         stats = ArmoniKStatistics(
