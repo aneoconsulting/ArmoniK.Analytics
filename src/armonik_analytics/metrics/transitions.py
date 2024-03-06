@@ -1,7 +1,8 @@
 import numpy as np
+from armonik.common import Task
 
 from .base import ArmoniKMetric
-from armonik.common import Task, TaskTimestamps
+from ..utils import TaskTimestamps
 
 
 class TimestampsTransition(ArmoniKMetric):
@@ -21,12 +22,10 @@ class TimestampsTransition(ArmoniKMetric):
         self.avg = 0
         self.min = None
         self.max = None
-        self.__class__.__qualname__ = (
-            f"{self.timestamps[0].capitalize()}To{self.timestamps[1].capitalize()}"
-        )
+        self.__class__.__qualname__ = f"{self.timestamps[0].name.lower().capitalize()}To{self.timestamps[1].name.capitalize()}"
 
     @property
-    def timestamps(self) -> tuple[str, str]:
+    def timestamps(self) -> tuple[TaskTimestamps, TaskTimestamps]:
         """
         Get the timestamps.
 
@@ -36,7 +35,7 @@ class TimestampsTransition(ArmoniKMetric):
         return self.__timestamps
 
     @timestamps.setter
-    def timestamps(self, __value: tuple[str, str]) -> None:
+    def timestamps(self, __value: tuple[TaskTimestamps, TaskTimestamps]) -> None:
         """
         Set the timestamps.
 
@@ -47,13 +46,10 @@ class TimestampsTransition(ArmoniKMetric):
             ValueError: If the timestamps are not valid or in inconsistent order.
         """
         for timestamp in __value:
-            if not TaskTimestamps.has_value(timestamp):
-                raise ValueError(f"{timestamp} is not a valid timestamp.")
-        if getattr(TaskTimestamps, __value[0].upper()) > getattr(
-            TaskTimestamps, __value[1].upper()
-        ):
+            assert timestamp in TaskTimestamps
+        if __value[0] > __value[1]:
             raise ValueError(
-                f"Inconsistent timestamp order '{__value[0]}' is not prior to '{__value[1]}'."
+                f"Inconsistent timestamp order '{__value[0].name}' is not prior to '{__value[1].name}'."
             )
         self.__timestamps = __value
 
@@ -68,7 +64,8 @@ class TimestampsTransition(ArmoniKMetric):
         """
         deltas = [
             (
-                getattr(t, f"{self.timestamps[1]}_at") - getattr(t, f"{self.timestamps[0]}_at")
+                getattr(t, f"{self.timestamps[1].name.lower()}_at")
+                - getattr(t, f"{self.timestamps[0].name.lower()}_at")
             ).total_seconds()
             for t in tasks
         ]

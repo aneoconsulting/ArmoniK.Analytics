@@ -15,7 +15,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-  'armonik',
+  'armonik>=3.16.1',
   'numpy',
 ]
 
@@ -45,4 +45,7 @@ tests = [
   'pytest',
   'pytest-cov',
   'pytest-benchmark[histogram]',
+]
+samples = [
+  'matplotlib'
 ]

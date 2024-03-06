@@ -1,11 +1,10 @@
-import abc
-
+from abc import ABC, abstractproperty
 from datetime import datetime
 
 from armonik.common import Task
 
 
-class ArmoniKMetric(abc.ABC):
+class ArmoniKMetric(ABC):
     """
     Abstract base class for ArmoniK metrics.
     """
@@ -31,7 +30,7 @@ class ArmoniKMetric(abc.ABC):
         """
         pass
 
-    @abc.abstractproperty
+    @abstractproperty
     def values(self) -> any:
         """
         Abstract method to be override.

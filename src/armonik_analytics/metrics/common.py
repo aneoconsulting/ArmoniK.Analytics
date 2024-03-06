@@ -63,7 +63,7 @@ class AvgThroughput(ArmoniKMetric):
         self.throughput = self.total / (end - start).total_seconds()
 
     @property
-    def values(self) -> int:
+    def values(self) -> float:
         """
         Return the average throughput as the metric value.
 

@@ -17,6 +17,7 @@ from armonik_analytics.metrics import (
     TimestampsTransition,
     TasksInStatusOverTime,
 )
+from armonik_analytics.utils import TaskTimestamps
 
 
 class DummyMetric(ArmoniKMetric):
@@ -161,16 +162,16 @@ class TestTotalElapsedTime:
 
 class TestTimestampsTransition:
     def test_constructor(self):
-        TimestampsTransition("created", "submitted")
+        TimestampsTransition(TaskTimestamps.CREATED, TaskTimestamps.SUBMITTED)
+
+        with pytest.raises(TypeError):
+            TimestampsTransition(TaskTimestamps.CREATED, "wrong")
 
         with pytest.raises(ValueError):
-            TimestampsTransition("created", "wrong")
-
-        with pytest.raises(ValueError):
-            TimestampsTransition("submitted", "created")
+            TimestampsTransition(TaskTimestamps.SUBMITTED, TaskTimestamps.CREATED)
 
     def test_timestamps_transition(self):
-        st = TimestampsTransition("created", "ended")
+        st = TimestampsTransition(TaskTimestamps.CREATED, TaskTimestamps.ENDED)
         st.update(5, task_batch_1)
         st.update(5, task_batch_2)
         st.complete(start, end)
@@ -179,7 +180,7 @@ class TestTimestampsTransition:
 
 class TestTasksInStatusOverTime:
     def test_task_in_status_over_time_no_next_status(self):
-        tisot = TasksInStatusOverTime(timestamp="ended")
+        tisot = TasksInStatusOverTime(timestamp=TaskTimestamps.ENDED)
         tisot.update(5, task_batch_1)
         tisot.update(5, task_batch_2)
         tisot.complete(start, end)
@@ -201,7 +202,9 @@ class TestTasksInStatusOverTime:
         )
 
     def test_task_in_status_over_time_with_next_status(self):
-        tisot = TasksInStatusOverTime(timestamp="created", next_timestamp="submitted")
+        tisot = TasksInStatusOverTime(
+            timestamp=TaskTimestamps.CREATED, next_timestamp=TaskTimestamps.SUBMITTED
+        )
         tisot.update(5, task_batch_1)
         tisot.update(5, task_batch_2)
         tisot.complete(start, end)
