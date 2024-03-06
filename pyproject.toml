@@ -1,5 +1,6 @@
 [build-system]
 requires = ["setuptools",
+            "setuptools-scm",
             "wheel"]
 build-backend = "setuptools.build_meta"
 
@@ -24,9 +25,8 @@ Homepage = "https://github.com/aneoconsulting/ArmoniK.Analytics"
 repository = "https://github.com/aneoconsulting/ArmoniK.Analytics"
 "Bug Tracker" = "https://github.com/aneoconsulting/ArmoniK.Analytics/issues"
 
-[tool.setuptools]
-include-package-data = true
-dynamic = {version = {attr = "armonik_analytics.__version__"}}
+[tool.setuptools_scm]
+write_to = "src/armonik_analytics/_version.py"
 
 [tool.setuptools.packages.find]
 where= ["src"]
