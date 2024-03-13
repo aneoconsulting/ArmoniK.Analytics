@@ -59,4 +59,4 @@ class ArmoniKStatistics:
     @property
     def values(self):
         """Dict[str, Union[float, dict]]: A dictionary containing computed statistics."""
-        return {metric.__class__.__qualname__: metric.values for metric in self.metrics}
+        return {metric.name: metric.values for metric in self.metrics}

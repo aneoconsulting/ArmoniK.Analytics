@@ -22,7 +22,10 @@ class TimestampsTransition(ArmoniKMetric):
         self.avg = 0
         self.min = None
         self.max = None
-        self.__class__.__qualname__ = f"{self.timestamps[0].name.lower().capitalize()}To{self.timestamps[1].name.capitalize()}"
+
+    @property
+    def name(self) -> str:
+        return f"{self.timestamps[0].name.capitalize()}To{self.timestamps[1].name.capitalize()}"
 
     @property
     def timestamps(self) -> tuple[TaskTimestamps, TaskTimestamps]:

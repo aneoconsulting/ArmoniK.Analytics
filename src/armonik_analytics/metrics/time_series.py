@@ -28,6 +28,10 @@ class TasksInStatusOverTime(ArmoniKMetric):
         self.index = 0
 
     @property
+    def name(self) -> str:
+        return f"{self.timestamp.name.capitalize()}TasksOverTime"
+
+    @property
     def timestamp(self) -> TaskTimestamps:
         return self.__timestamp
 
@@ -62,7 +66,7 @@ class TasksInStatusOverTime(ArmoniKMetric):
         n_tasks = len(tasks)
         if self.timestamps is None:
             n = (2 * total) + 1 if self.next_timestamp else total + 1
-            self.timestamps = np.memmap("timestamps.dat", dtype=object, mode="w+", shape=(2, n))
+            self.timestamps = np.memmap(f"{self.name}.dat", dtype=object, mode="w+", shape=(2, n))
             self.index = 1
         self.timestamps[:, self.index : self.index + n_tasks] = [
             [getattr(t, f"{self.timestamp.name.lower()}_at") for t in tasks],

@@ -18,6 +18,10 @@ from armonik_analytics.utils import TaskTimestamps
 
 def plot_metrics(stats):
     plt.figure()
+    plt.xlabel("Time (s)")
+    plt.ylabel("Number of tasks")
+    plt.legend(loc="upper right")
+    plt.title("Tasks in status over time")
     for metric_name in stats.values.keys():
         if metric_name.endswith("OverTime"):
             values = stats.values[metric_name]
@@ -58,6 +62,13 @@ if __name__ == "__main__":
                 TimestampsTransition(TaskTimestamps.FETCHED, TaskTimestamps.STARTED),
                 TimestampsTransition(TaskTimestamps.STARTED, TaskTimestamps.PROCESSED),
                 TimestampsTransition(TaskTimestamps.PROCESSED, TaskTimestamps.ENDED),
+                TasksInStatusOverTime(TaskTimestamps.CREATED, TaskTimestamps.SUBMITTED),
+                TasksInStatusOverTime(TaskTimestamps.SUBMITTED, TaskTimestamps.RECEIVED),
+                TasksInStatusOverTime(TaskTimestamps.RECEIVED, TaskTimestamps.ACQUIRED),
+                TasksInStatusOverTime(TaskTimestamps.ACQUIRED, TaskTimestamps.FETCHED),
+                TasksInStatusOverTime(TaskTimestamps.FETCHED, TaskTimestamps.STARTED),
+                TasksInStatusOverTime(TaskTimestamps.STARTED, TaskTimestamps.PROCESSED),
+                TasksInStatusOverTime(TaskTimestamps.PROCESSED, TaskTimestamps.ENDED),
                 TasksInStatusOverTime(TaskTimestamps.ENDED),
             ],
         )
