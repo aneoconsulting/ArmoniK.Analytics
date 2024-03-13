@@ -70,15 +70,16 @@ class TimestampsTransition(ArmoniKMetric):
                 getattr(t, f"{self.timestamps[1].name.lower()}_at")
                 - getattr(t, f"{self.timestamps[0].name.lower()}_at")
             ).total_seconds()
-            for t in tasks
+            for t in tasks if (getattr(t, f"{self.timestamps[1].name.lower()}_at") is not None and getattr(t, f"{self.timestamps[0].name.lower()}_at") is not None)
         ]
-        self.avg += np.sum(deltas) / total
-        min = np.min(deltas)
-        max = np.max(deltas)
-        if self.max is None or self.max < max:
-            self.max = max
-        if self.min is None or self.min > min:
-            self.min = min
+        if deltas:
+            self.avg += np.sum(deltas) / total
+            min = np.min(deltas)
+            max = np.max(deltas)
+            if self.max is None or self.max < max:
+                self.max = max
+            if self.min is None or self.min > min:
+                self.min = min
 
     @property
     def values(self) -> dict[str, float]:
