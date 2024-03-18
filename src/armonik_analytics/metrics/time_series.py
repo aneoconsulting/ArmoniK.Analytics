@@ -25,7 +25,12 @@ class TasksInStatusOverTime(ArmoniKMetric):
         self.timestamp = timestamp
         self.next_timestamp = next_timestamp
         self.timestamps = None
+        self.steps = None
         self.index = 0
+
+    @property
+    def name(self) -> str:
+        return f"{self.timestamp.name.capitalize()}TasksOverTime"
 
     @property
     def timestamp(self) -> TaskTimestamps:
@@ -33,8 +38,7 @@ class TasksInStatusOverTime(ArmoniKMetric):
 
     @timestamp.setter
     def timestamp(self, __value: TaskTimestamps) -> None:
-        if __value not in TaskTimestamps:
-            raise ValueError(f"{__value} is not a valid timestamp.")
+        __value = TaskTimestamps(__value)
         self.__timestamp = __value
 
     @property
@@ -44,7 +48,7 @@ class TasksInStatusOverTime(ArmoniKMetric):
     @next_timestamp.setter
     def next_timestamp(self, __value: TaskTimestamps) -> None:
         if __value is not None:
-            assert __value in TaskTimestamps
+            __value = TaskTimestamps(__value)
             if __value < self.timestamp:
                 raise ValueError(
                     f"Inconsistent timestamp order '{self.timestamp.name}' is not prior to '{__value.name}'."
@@ -62,21 +66,24 @@ class TasksInStatusOverTime(ArmoniKMetric):
         n_tasks = len(tasks)
         if self.timestamps is None:
             n = (2 * total) + 1 if self.next_timestamp else total + 1
-            self.timestamps = np.memmap("timestamps.dat", dtype=object, mode="w+", shape=(2, n))
+            self.timestamps = np.memmap(
+                f"{self.name}_timestamps.dat", dtype=datetime, mode="w+", shape=(n,)
+            )
+            self.steps = np.memmap(f"{self.name}_steps.dat", dtype=np.int8, mode="w+", shape=(n,))
             self.index = 1
-        self.timestamps[:, self.index : self.index + n_tasks] = [
-            [getattr(t, f"{self.timestamp.name.lower()}_at") for t in tasks],
-            n_tasks * [1],
+        self.timestamps[self.index : self.index + n_tasks] = [
+            getattr(t, f"{self.timestamp.name.lower()}_at") for t in tasks
         ]
+        self.steps[self.index : self.index + n_tasks] = n_tasks * [1]
         self.index += n_tasks
         if self.next_timestamp:
-            self.timestamps[:, self.index : self.index + n_tasks] = [
-                [getattr(t, f"{self.next_timestamp.name.lower()}_at") for t in tasks],
-                n_tasks * [-1],
+            self.timestamps[self.index : self.index + n_tasks] = [
+                getattr(t, f"{self.next_timestamp.name.lower()}_at") for t in tasks
             ]
+            self.steps[self.index : self.index + n_tasks] = n_tasks * [-1]
             self.index += n_tasks
 
-    def complete(self, start: datetime, end: datetime) -> None:
+    def complete(self, start: datetime | None, end: datetime | None) -> None:
         """
         Complete the metric calculation.
 
@@ -84,13 +91,29 @@ class TasksInStatusOverTime(ArmoniKMetric):
             start (datetime): The start time.
             end (datetime): The end time.
         """
-        self.timestamps[:, 0] = (start, 0)
-        self.timestamps = self.timestamps[:, self.timestamps[0, :].argsort()]
-        self.timestamps[1, :] = np.cumsum(self.timestamps[1, :])
+        if start is None or self.timestamps.shape[0] == 1:
+            self.timestamps = None
+            self.steps = None
+            return
+        # Add start date with no step
+        self.timestamps[0] = start
+        self.steps[0] = 0
+        # Remove inconsistent data (due to missing timestamps in task metadata)
+        inconsistent_values = np.atleast_1d(self.timestamps == np.array(None)).nonzero()[0]
+        self.timestamps = np.delete(self.timestamps, inconsistent_values)
+        self.steps = np.delete(self.steps, inconsistent_values)
+        # Sort the arrays by timestamp dates
+        sort_indices = self.timestamps.argsort()
+        self.timestamps = self.timestamps[sort_indices]
+        self.steps = self.steps[sort_indices]
+        # Compute the number of task in the given timestamp over time
+        self.steps = np.cumsum(self.steps)
 
     @property
     def values(self):
         """
         Return the timestamps as the metric values.
         """
-        return self.timestamps
+        if self.timestamps is None:
+            return None
+        return np.vstack((self.timestamps, self.steps))

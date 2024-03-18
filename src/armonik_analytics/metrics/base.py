@@ -30,6 +30,10 @@ class ArmoniKMetric(ABC):
         """
         pass
 
+    @property
+    def name(self) -> str:
+        return self.__class__.__name__
+
     @abstractproperty
     def values(self) -> any:
         """

@@ -44,12 +44,16 @@ class ArmoniKStatistics:
         while tasks:
             for metric in self.metrics:
                 metric.update(total, tasks)
-            min_start = np.min([t.created_at for t in tasks])
-            max_end = np.max([t.ended_at for t in tasks])
-            if start is None or min_start < start:
-                start = min_start
-            if end is None or max_end > end:
-                end = max_end
+            starts = [t.created_at for t in tasks if t.created_at]
+            ends = [t.ended_at for t in tasks if t.ended_at]
+            if starts:
+                min_start = np.min(starts)
+                if start is None or min_start < start:
+                    start = min_start
+            if ends:
+                max_end = np.max(ends)
+                if end is None or max_end > end:
+                    end = max_end
             page += 1
             _, tasks = self.client.list_tasks(task_filter=self.filter, page=page)
 
@@ -59,4 +63,4 @@ class ArmoniKStatistics:
     @property
     def values(self):
         """Dict[str, Union[float, dict]]: A dictionary containing computed statistics."""
-        return {metric.__class__.__qualname__: metric.values for metric in self.metrics}
+        return {metric.name: metric.values for metric in self.metrics}

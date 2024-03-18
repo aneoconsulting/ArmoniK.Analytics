@@ -19,10 +19,13 @@ class TimestampsTransition(ArmoniKMetric):
             timestamp_2 (str): The second timestamp.
         """
         self.timestamps = (timestamp_1, timestamp_2)
-        self.avg = 0
+        self.avg = None
         self.min = None
         self.max = None
-        self.__class__.__qualname__ = f"{self.timestamps[0].name.lower().capitalize()}To{self.timestamps[1].name.capitalize()}"
+
+    @property
+    def name(self) -> str:
+        return f"{self.timestamps[0].name.capitalize()}To{self.timestamps[1].name.capitalize()}"
 
     @property
     def timestamps(self) -> tuple[TaskTimestamps, TaskTimestamps]:
@@ -46,7 +49,7 @@ class TimestampsTransition(ArmoniKMetric):
             ValueError: If the timestamps are not valid or in inconsistent order.
         """
         for timestamp in __value:
-            assert timestamp in TaskTimestamps
+            TaskTimestamps(timestamp)
         if __value[0] > __value[1]:
             raise ValueError(
                 f"Inconsistent timestamp order '{__value[0].name}' is not prior to '{__value[1].name}'."
@@ -68,14 +71,23 @@ class TimestampsTransition(ArmoniKMetric):
                 - getattr(t, f"{self.timestamps[0].name.lower()}_at")
             ).total_seconds()
             for t in tasks
+            if (
+                getattr(t, f"{self.timestamps[1].name.lower()}_at") is not None
+                and getattr(t, f"{self.timestamps[0].name.lower()}_at") is not None
+            )
         ]
-        self.avg += np.sum(deltas) / total
-        min = np.min(deltas)
-        max = np.max(deltas)
-        if self.max is None or self.max < max:
-            self.max = max
-        if self.min is None or self.min > min:
-            self.min = min
+        if deltas:
+            self.avg = (
+                self.avg + np.sum(deltas) / len(deltas)
+                if self.avg
+                else np.sum(deltas) / len(deltas)
+            )
+            min = np.min(deltas)
+            max = np.max(deltas)
+            if self.max is None or self.max < max:
+                self.max = max
+            if self.min is None or self.min > min:
+                self.min = min
 
     @property
     def values(self) -> dict[str, float]:
