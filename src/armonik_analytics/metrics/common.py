@@ -12,7 +12,7 @@ class TotalElapsedTime(ArmoniKMetric):
     def __init__(self) -> None:
         self.elapsed = None
 
-    def complete(self, start: datetime, end: datetime) -> None:
+    def complete(self, start: datetime | None, end: datetime | None) -> None:
         """
         Calculate the total elapsed time.
 
@@ -20,7 +20,10 @@ class TotalElapsedTime(ArmoniKMetric):
             start (datetime): The start time.
             end (datetime): The end time.
         """
-        self.elapsed = (end - start).total_seconds()
+        if isinstance(start, datetime) and isinstance(end, datetime):
+            self.elapsed = (end - start).total_seconds()
+        else:
+            self.elapsed = None
 
     @property
     def values(self) -> float:
@@ -40,7 +43,7 @@ class AvgThroughput(ArmoniKMetric):
 
     def __init__(self) -> None:
         self.throughput = None
-        self.total = None
+        self.ended = None
 
     def update(self, total: int, tasks: list[Task]) -> None:
         """
@@ -50,9 +53,10 @@ class AvgThroughput(ArmoniKMetric):
             total (int): Total number of tasks.
             tasks (list[Task]): A task batch.
         """
-        self.total = total
+        n_ended = len([t for t in tasks if t.ended_at])
+        self.ended = self.ended + n_ended if self.ended else n_ended
 
-    def complete(self, start: datetime, end: datetime) -> None:
+    def complete(self, start: datetime | None, end: datetime | None) -> None:
         """
         Calculate the average throughput.
 
@@ -60,7 +64,14 @@ class AvgThroughput(ArmoniKMetric):
             start (datetime): The start time.
             end (datetime): The end time.
         """
-        self.throughput = self.total / (end - start).total_seconds()
+        if (
+            isinstance(self.ended, int)
+            and isinstance(start, datetime)
+            and isinstance(end, datetime)
+        ):
+            self.throughput = self.ended / (end - start).total_seconds()
+        else:
+            self.throughput = None
 
     @property
     def values(self) -> float:
